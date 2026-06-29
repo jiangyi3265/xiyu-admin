@@ -1,0 +1,72 @@
+name: Deploy admin web
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-admin-web
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build:prod
+
+      - name: Upload dist
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER || 'root' }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: dist/**
+          target: /tmp/xiyu-admin-web
+          strip_components: 1
+          rm: true
+
+      - name: Publish to Baota site root
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER || 'root' }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -eu
+
+            WEB_ROOT="/www/wwwroot/xiyuht.oksja.cn"
+            STAGING_DIR="/tmp/xiyu-admin-web"
+
+            if [ "$WEB_ROOT" != "/www/wwwroot/xiyuht.oksja.cn" ]; then
+              echo "unexpected web root: $WEB_ROOT"
+              exit 1
+            fi
+
+            test -f "$STAGING_DIR/index.html"
+            mkdir -p "$WEB_ROOT"
+            find "$WEB_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+            cp -a "$STAGING_DIR/." "$WEB_ROOT/"
+
+            if id www >/dev/null 2>&1; then
+              chown -R www:www "$WEB_ROOT"
+            fi
+
+            test -f "$WEB_ROOT/index.html"
