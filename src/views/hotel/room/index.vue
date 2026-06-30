@@ -75,6 +75,19 @@
          <el-table-column label="面积" align="center" prop="area" />
          <el-table-column label="床型" align="center" prop="bed" />
          <el-table-column label="价格" align="center" prop="price" />
+         <el-table-column label="封面图" align="center" prop="coverUrl" width="110">
+            <template #default="scope">
+               <el-image
+                  v-if="scope.row.coverUrl"
+                  class="room-cover"
+                  :src="imageUrl(scope.row.coverUrl)"
+                  :preview-src-list="[imageUrl(scope.row.coverUrl)]"
+                  preview-teleported
+                  fit="cover"
+               />
+               <span v-else class="muted">未上传</span>
+            </template>
+         </el-table-column>
          <el-table-column label="每日库存" align="center" prop="stock" />
          <el-table-column label="场景" align="center" prop="scene" />
          <el-table-column label="排序" align="center" prop="sort" />
@@ -116,6 +129,9 @@
             </el-form-item>
             <el-form-item label="价格" prop="price">
                <el-input-number v-model="form.price" :min="0" :precision="2" controls-position="right" />
+            </el-form-item>
+            <el-form-item label="封面图" prop="coverUrl">
+               <image-upload v-model="form.coverUrl" :limit="1" :file-size="8" />
             </el-form-item>
             <el-form-item label="每日库存" prop="stock">
                <el-input-number v-model="form.stock" :min="0" controls-position="right" />
@@ -218,6 +234,7 @@ function reset() {
     bed: undefined,
     win: undefined,
     price: undefined,
+    coverUrl: undefined,
     stock: 10,
     scene: undefined,
     tags: undefined,
@@ -307,5 +324,24 @@ function handleExport() {
   }, `room_${new Date().getTime()}.xlsx`)
 }
 
+function imageUrl(url) {
+  if (!url) return ""
+  if (/^(https?:)?\/\//.test(url)) return url
+  return import.meta.env.VITE_APP_BASE_API + url
+}
+
 getList()
 </script>
+
+<style scoped>
+.room-cover {
+  width: 72px;
+  height: 48px;
+  border-radius: 6px;
+  vertical-align: middle;
+}
+.muted {
+  color: #909399;
+  font-size: 12px;
+}
+</style>
