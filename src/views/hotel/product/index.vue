@@ -144,7 +144,14 @@
                <el-input v-model="form.badge" placeholder="请输入角标" />
             </el-form-item>
             <el-form-item label="场景" prop="scene">
-               <el-input v-model="form.scene" placeholder="请输入场景" />
+               <el-select v-model="form.scene" placeholder="请选择场景" style="width: 100%">
+                  <el-option
+                     v-for="dict in lwf_scene"
+                     :key="dict.value"
+                     :label="dict.label"
+                     :value="dict.value"
+                  />
+               </el-select>
             </el-form-item>
             <el-form-item label="价格" prop="price">
                <el-input-number v-model="form.price" :min="0" :precision="2" controls-position="right" />
@@ -191,7 +198,7 @@
 import { listProduct, getProduct, delProduct, addProduct, updateProduct } from "@/api/hotel/product"
 
 const { proxy } = getCurrentInstance()
-const { lwf_product_type, sys_normal_disable } = proxy.useDict("lwf_product_type", "sys_normal_disable")
+const { lwf_product_type, sys_normal_disable, lwf_scene } = proxy.useDict("lwf_product_type", "sys_normal_disable", "lwf_scene")
 
 const productList = ref([])
 const open = ref(false)

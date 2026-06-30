@@ -73,7 +73,11 @@
          <el-table-column label="主键" align="center" prop="bannerId" />
          <el-table-column label="标题" align="center" prop="title" :show-overflow-tooltip="true" />
          <el-table-column label="副标题" align="center" prop="sub" :show-overflow-tooltip="true" />
-         <el-table-column label="场景" align="center" prop="scene" />
+         <el-table-column label="场景" align="center" prop="scene">
+            <template #default="scope">
+               <dict-tag :options="lwf_scene" :value="scope.row.scene" />
+            </template>
+         </el-table-column>
          <el-table-column label="排序" align="center" prop="sort" />
          <el-table-column label="状态" align="center" prop="status">
             <template #default="scope">
@@ -112,9 +116,12 @@
             </el-form-item>
             <el-form-item label="场景" prop="scene">
                <el-select v-model="form.scene" placeholder="请选择场景" style="width: 100%">
-                  <el-option label="餐饮" value="dine" />
-                  <el-option label="客房" value="room" />
-                  <el-option label="夜景" value="night" />
+                  <el-option
+                     v-for="dict in lwf_scene"
+                     :key="dict.value"
+                     :label="dict.label"
+                     :value="dict.value"
+                  />
                </el-select>
             </el-form-item>
             <el-form-item label="排序" prop="sort">
@@ -147,7 +154,7 @@
 import { listBanner, getBanner, delBanner, addBanner, updateBanner } from "@/api/hotel/banner"
 
 const { proxy } = getCurrentInstance()
-const { sys_normal_disable } = proxy.useDict("sys_normal_disable")
+const { sys_normal_disable, lwf_scene } = proxy.useDict("sys_normal_disable", "lwf_scene")
 
 const bannerList = ref([])
 const open = ref(false)

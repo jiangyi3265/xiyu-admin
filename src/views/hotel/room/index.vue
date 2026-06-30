@@ -89,7 +89,11 @@
             </template>
          </el-table-column>
          <el-table-column label="每日库存" align="center" prop="stock" />
-         <el-table-column label="场景" align="center" prop="scene" />
+         <el-table-column label="场景" align="center" prop="scene">
+            <template #default="scope">
+               <dict-tag :options="lwf_scene" :value="scope.row.scene" />
+            </template>
+         </el-table-column>
          <el-table-column label="排序" align="center" prop="sort" />
          <el-table-column label="状态" align="center" prop="status">
             <template #default="scope">
@@ -137,7 +141,14 @@
                <el-input-number v-model="form.stock" :min="0" controls-position="right" />
             </el-form-item>
             <el-form-item label="场景" prop="scene">
-               <el-input v-model="form.scene" placeholder="请输入场景（0-3）" />
+               <el-select v-model="form.scene" placeholder="请选择场景" style="width: 100%">
+                  <el-option
+                     v-for="dict in lwf_scene"
+                     :key="dict.value"
+                     :label="dict.label"
+                     :value="dict.value"
+                  />
+               </el-select>
             </el-form-item>
             <el-form-item label="标签" prop="tags">
                <el-input v-model="form.tags" placeholder="多个标签用逗号分隔" />
@@ -181,7 +192,7 @@
 import { listRoom, getRoom, delRoom, addRoom, updateRoom } from "@/api/hotel/room"
 
 const { proxy } = getCurrentInstance()
-const { sys_normal_disable } = proxy.useDict("sys_normal_disable")
+const { sys_normal_disable, lwf_scene } = proxy.useDict("sys_normal_disable", "lwf_scene")
 
 const roomList = ref([])
 const open = ref(false)

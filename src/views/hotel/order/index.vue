@@ -86,8 +86,24 @@
                <span>{{ parseTime(scope.row.createTime) }}</span>
             </template>
          </el-table-column>
-         <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+         <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
             <template #default="scope">
+               <el-button
+                  v-if="scope.row.status === 'refund_apply'"
+                  link
+                  type="success"
+                  icon="CircleCheck"
+                  @click="handleApproveRefund(scope.row)"
+                  v-hasPermi="['hotel:order:edit']"
+               >同意退款</el-button>
+               <el-button
+                  v-if="scope.row.status === 'refund_apply'"
+                  link
+                  type="warning"
+                  icon="CircleClose"
+                  @click="handleRejectRefund(scope.row)"
+                  v-hasPermi="['hotel:order:edit']"
+               >驳回</el-button>
                <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['hotel:order:edit']">修改</el-button>
                <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['hotel:order:remove']">删除</el-button>
             </template>
@@ -127,6 +143,9 @@
             <el-form-item label="支付金额" prop="payAmount">
                <el-input-number v-model="form.payAmount" controls-position="right" :min="0" :precision="2" />
             </el-form-item>
+            <el-form-item label="关联订单" prop="refId">
+               <el-input v-model="form.refId" placeholder="储值退款关联的原充值订单ID" disabled />
+            </el-form-item>
             <el-form-item label="标签文本" prop="tagText">
                <el-input v-model="form.tagText" placeholder="请输入标签文本" />
             </el-form-item>
@@ -145,7 +164,8 @@
 </template>
 
 <script setup name="Order">
-import { listOrder, getOrder, delOrder, updateOrder } from "@/api/hotel/order"
+import { ElMessageBox } from "element-plus"
+import { listOrder, getOrder, delOrder, updateOrder, approveRefund, rejectRefund } from "@/api/hotel/order"
 
 const { proxy } = getCurrentInstance()
 const { lwf_order_status } = proxy.useDict("lwf_order_status")
@@ -202,10 +222,35 @@ function reset() {
     title: undefined,
     status: undefined,
     payAmount: undefined,
+    refId: undefined,
     tagText: undefined,
     remark: undefined
   }
   proxy.resetForm("orderRef")
+}
+
+/** 同意退款 */
+function handleApproveRefund(row) {
+  proxy.$modal.confirm('确认同意订单 "' + row.orderNo + '" 的退款申请？同意后会执行微信退款/扣减储值余额。').then(function () {
+    return approveRefund(row.orderId)
+  }).then(() => {
+    getList()
+    proxy.$modal.msgSuccess("退款已通过")
+  }).catch(() => {})
+}
+
+/** 驳回退款 */
+function handleRejectRefund(row) {
+  ElMessageBox.prompt('请输入驳回原因', '驳回退款', {
+    confirmButtonText: '确认驳回',
+    cancelButtonText: '取消',
+    inputPlaceholder: '例如：已超过可退规则'
+  }).then(({ value }) => {
+    return rejectRefund(row.orderId, value || '')
+  }).then(() => {
+    getList()
+    proxy.$modal.msgSuccess("已驳回退款")
+  }).catch(() => {})
 }
 
 /** 搜索按钮操作 */

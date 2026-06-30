@@ -35,6 +35,23 @@ export function updateOrder(data) {
   })
 }
 
+// 同意退款
+export function approveRefund(orderId) {
+  return request({
+    url: '/hotel/order/' + orderId + '/refund/approve',
+    method: 'put'
+  })
+}
+
+// 驳回退款
+export function rejectRefund(orderId, reason) {
+  return request({
+    url: '/hotel/order/' + orderId + '/refund/reject',
+    method: 'put',
+    data: { reason }
+  })
+}
+
 // 删除订单
 export function delOrder(orderId) {
   return request({

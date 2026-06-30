@@ -87,7 +87,11 @@
                <dict-tag :options="lwf_mall_cat" :value="scope.row.cat" />
             </template>
          </el-table-column>
-         <el-table-column label="场景" align="center" prop="scene" />
+         <el-table-column label="场景" align="center" prop="scene">
+            <template #default="scope">
+               <dict-tag :options="lwf_scene" :value="scope.row.scene" />
+            </template>
+         </el-table-column>
          <el-table-column label="积分" align="center" prop="points" />
          <el-table-column label="排序" align="center" prop="sort" />
          <el-table-column label="状态" align="center" prop="status">
@@ -128,7 +132,14 @@
                </el-select>
             </el-form-item>
             <el-form-item label="场景" prop="scene">
-               <el-input v-model="form.scene" placeholder="请输入场景" />
+               <el-select v-model="form.scene" placeholder="请选择场景" style="width: 100%">
+                  <el-option
+                     v-for="dict in lwf_scene"
+                     :key="dict.value"
+                     :label="dict.label"
+                     :value="dict.value"
+                  />
+               </el-select>
             </el-form-item>
             <el-form-item label="积分" prop="points">
                <el-input-number v-model="form.points" :min="0" controls-position="right" />
@@ -163,7 +174,7 @@
 import { listMall, getMall, delMall, addMall, updateMall } from "@/api/hotel/mall"
 
 const { proxy } = getCurrentInstance()
-const { lwf_mall_cat, sys_normal_disable } = proxy.useDict("lwf_mall_cat", "sys_normal_disable")
+const { lwf_mall_cat, sys_normal_disable, lwf_scene } = proxy.useDict("lwf_mall_cat", "sys_normal_disable", "lwf_scene")
 
 const mallList = ref([])
 const open = ref(false)
